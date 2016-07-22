@@ -1,0 +1,5 @@
+/data
+*.swp
+/vis/data/*.jpg
+/vis/data/*.json
+/data/models/densecap/densecap-pretrained-vgg16.t7

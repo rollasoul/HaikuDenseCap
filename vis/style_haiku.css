@@ -1,0 +1,49 @@
+body {
+  color: #333;
+  margin: 0;
+  padding: 0;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+  font-weight: 300;
+}
+svg {
+  background-color: #FFF;
+}
+hr {
+  border: 1px solid black;
+}
+#wrap {
+  width:800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+#header {
+  text-align: center;
+}
+#image_vis {
+  background-color: #FFF;
+  padding: 20px 0px;
+}
+#image_vis_controls {
+  text-align: center;
+  padding: 30px;
+  background-color: #FFF;
+  margin-bottom: 20px;
+}
+.bb {
+  height: 25px;
+  width: 25px;
+  margin: 5px;
+}
+.ddesc {
+  font-size: 32px;
+}
+.dcent {
+  margin-left: auto;
+  margin-right: auto;
+  width: 720px;
+  margin-bottom: 20px;
+}
+.djust {
+  text-align: justify;
+  margin-top: 80px;
+}
