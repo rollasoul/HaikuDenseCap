@@ -62,15 +62,12 @@ if randint(0,1) == 0:
 		selection_line3 = selection_line3.split()
 		selection_line3 = selection_line3 [0] + " " + selection_line3 [1]
 
-# have a look at the result
+# return the result
 print selection_line1 
 print selection_line2 
 print selection_line3
 
 for i in range (0, len(syllables23)): 
 	print syllables23
-
-
-
 
 
