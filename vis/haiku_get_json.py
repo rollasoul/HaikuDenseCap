@@ -12,6 +12,8 @@ import base64
 import shutil
 from urlparse import urljoin
 
+from PIL import Image
+
 # capture image from webcam, change directory to (densecap)pics folder, write image to folder
 vidcap = cv2.VideoCapture()
 vidcap.open(0)
@@ -123,6 +125,11 @@ nuallimages = ''.join(nuallimages)
 fh = open("imageToSave.png", "wb")
 fh.write(nuallimages.decode('base64'))
 fh.close()
+
+#open picture
+os.chdir('/Users/rollasoul/densecap/vis')
+img = Image.open('imageToSave.png')
+img.show()
 
 # open in webbrowser (if necessary)
 		#webbrowser.open(nuallimages)
