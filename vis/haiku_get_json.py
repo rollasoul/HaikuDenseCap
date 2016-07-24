@@ -1,3 +1,7 @@
+import cv2
+import os
+import subprocess
+
 import json
 import pronouncing
 from random import randint
@@ -7,6 +11,20 @@ import webbrowser
 import base64
 import shutil
 from urlparse import urljoin
+
+# capture image from webcam, change directory to (densecap)pics folder, write image to folder
+vidcap = cv2.VideoCapture()
+vidcap.open(0)
+retval, image = vidcap.retrieve()
+vidcap.release()
+
+face_file_name = "haikucam.jpg"
+os.chdir('/Users/rollasoul/densecap/imgs/pics')
+cv2.imwrite(face_file_name, image)
+
+# start densecap neural network to generate captions (and write them in json-file)
+os.chdir('/Users/rollasoul/densecap')
+subprocess.call('th run_model.lua -input_dir /Users/rollasoul/densecap/imgs/pics -gpu -1', shell=True)
 
 #get the data from the json file
 haiku_base = open('/Users/rollasoul/densecap/vis/data/results.json')
@@ -75,13 +93,11 @@ print selection_line3
 
 
 # let the rnn generate the handwriting
-
+#insert haiku-lines into url parameters
 payload = {'text': '', 'style': '../data/trainset_diff_no_start_all_labels.nc,1082+554', 'bias': '0.45', 'samples': '1'}
+payload['text'] = selection_line1 + ". " + selection_line2 + ". " + selection_line3
 
-payload['text'] = selection_line1 + " " + selection_line2 + " " + selection_line3
-
-#selection_line1 + selection_line2 + selection_line3
-print payload
+# send off url with parameters
 res = requests.get('http://www.cs.toronto.edu/~graves/handwriting.cgi', params=payload)
 print (res.url)
 
@@ -89,26 +105,26 @@ res.raise_for_status()
 noStarchSoup = bs4.BeautifulSoup(res.text)
 type(noStarchSoup)
 
+# generate storage for all images from website, add them to storage
 allimages = []
-
 for imgtag in noStarchSoup.find_all('img'):
      #print(imgtag['src'])
 	allimages.append(imgtag['src'])
 
+# pick handwriting image and store it in new storage (without image markers, just base64, by character)
 allimages = allimages[6]
 nuallimages = []
-
 for i in range (23, len(allimages)):
 	nuallimages.append(allimages[i])
-
+#join list of characters in one string
 nuallimages = ''.join(nuallimages)
 
-#print nuallimages
-
+# convert base64 image data to png and store it locally in png-file
 fh = open("imageToSave.png", "wb")
 fh.write(nuallimages.decode('base64'))
 fh.close()
 
-#webbrowser.open(nuallimages)
+# open in webbrowser (if necessary)
+		#webbrowser.open(nuallimages)
 
 
