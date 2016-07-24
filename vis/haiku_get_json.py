@@ -2,6 +2,12 @@ import json
 import pronouncing
 from random import randint
 
+import requests, bs4
+import webbrowser
+import base64
+import shutil
+from urlparse import urljoin
+
 #get the data from the json file
 haiku_base = open('/Users/rollasoul/densecap/vis/data/results.json')
 wjson = haiku_base.read()
@@ -67,7 +73,42 @@ print selection_line1
 print selection_line2 
 print selection_line3
 
-for i in range (0, len(syllables23)): 
-	print syllables23
+
+# let the rnn generate the handwriting
+
+payload = {'text': '', 'style': '../data/trainset_diff_no_start_all_labels.nc,1082+554', 'bias': '0.45', 'samples': '1'}
+
+payload['text'] = selection_line1 + " " + selection_line2 + " " + selection_line3
+
+#selection_line1 + selection_line2 + selection_line3
+print payload
+res = requests.get('http://www.cs.toronto.edu/~graves/handwriting.cgi', params=payload)
+print (res.url)
+
+res.raise_for_status()
+noStarchSoup = bs4.BeautifulSoup(res.text)
+type(noStarchSoup)
+
+allimages = []
+
+for imgtag in noStarchSoup.find_all('img'):
+     #print(imgtag['src'])
+	allimages.append(imgtag['src'])
+
+allimages = allimages[6]
+nuallimages = []
+
+for i in range (23, len(allimages)):
+	nuallimages.append(allimages[i])
+
+nuallimages = ''.join(nuallimages)
+
+#print nuallimages
+
+fh = open("imageToSave.png", "wb")
+fh.write(nuallimages.decode('base64'))
+fh.close()
+
+#webbrowser.open(nuallimages)
 
 
