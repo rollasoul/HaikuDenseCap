@@ -91,8 +91,8 @@ while selection_line1[0] == selection_line2[0]:
 # 		selection_line3 = selection_line3 [0] + " " + selection_line3 [1]
 
 # return the result
-print selection_line1 
-print selection_line2 
+print selection_line1
+print selection_line2
 print selection_line3
 
 # let the rnn generate the handwriting: insert haiku-lines into url parameters
@@ -163,5 +163,3 @@ subprocess.call('/Applications/Arduino.app/Contents/MacOS/Arduino --upload A_pri
 
 # open in webbrowser (if necessary)
 		#webbrowser.open(nuallimages)
-
-
