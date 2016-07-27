@@ -1,3 +1,6 @@
+(Code from Justin Johnson's github)
+
+
 #DenseCap
 
 This is the code for the paper
