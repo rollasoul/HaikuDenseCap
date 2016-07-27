@@ -1,6 +1,34 @@
+import cv2
+import os
+import subprocess
+
 import json
 import pronouncing
 from random import randint
+
+import requests, bs4
+import webbrowser
+import base64
+import shutil
+from urlparse import urljoin
+
+from PIL import Image
+
+import shutil
+
+# capture image from webcam, change directory to (densecap)pics folder, write image to folder
+vidcap = cv2.VideoCapture()
+vidcap.open(0)
+retval, image = vidcap.retrieve()
+vidcap.release()
+
+face_file_name = "haikucam.jpg"
+os.chdir('/Users/rollasoul/densecap/imgs/pics')
+cv2.imwrite(face_file_name, image)
+
+# start densecap neural network to generate captions (and write them in json-file)
+os.chdir('/Users/rollasoul/densecap')
+subprocess.call('th run_model.lua -input_dir /Users/rollasoul/densecap/imgs/pics -gpu -1', shell=True)
 
 #get the data from the json file
 haiku_base = open('/Users/rollasoul/densecap/vis/data/results.json')
@@ -49,25 +77,91 @@ while selection_line1[0] == selection_line2[0]:
 	selection_line3 = syllables5 [randint(len(syllables5)/2,(len(syllables5)-1))]
 
 # add a bit of random weirdness to it (cut one caption after first two words and replace one of the 3 verses of the Haiku)
-i = randint(0,2)
-x = randint(0,2)
-if randint(0,1) == 0:
-	if x == 0:
-		selection_line1 = selection_line1.split()
-		selection_line1 = selection_line1 [0] + " " + selection_line1 [1]
-	if x == 1:
-		selection_line2 = selection_line2.split()
-		selection_line2 = selection_line2 [0] + " " + selection_line2 [1]
-	if x == 2:
-		selection_line3 = selection_line3.split()
-		selection_line3 = selection_line3 [0] + " " + selection_line3 [1]
+# i = randint(0,2)
+# x = randint(0,2)
+# if randint(0,1) == 0:
+# 	if x == 0:
+# 		selection_line1 = selection_line1.split()
+# 		selection_line1 = selection_line1 [0] + " " + selection_line1 [1]
+# 	if x == 1:
+# 		selection_line2 = selection_line2.split()
+# 		selection_line2 = selection_line2 [0] + " " + selection_line2 [1]
+# 	if x == 2:
+# 		selection_line3 = selection_line3.split()
+# 		selection_line3 = selection_line3 [0] + " " + selection_line3 [1]
 
 # return the result
 print selection_line1 
 print selection_line2 
 print selection_line3
 
-for i in range (0, len(syllables23)): 
-	print syllables23
+# let the rnn generate the handwriting: insert haiku-lines into url parameters
+payload = {'text': '', 'style': '../data/trainset_diff_no_start_all_labels.nc,1082+554', 'bias': '0.45', 'samples': '1'}
+payload['text'] = selection_line1 + ". " + selection_line2 + ". " + selection_line3
+
+# send off url with parameters
+res = requests.get('http://www.cs.toronto.edu/~graves/handwriting.cgi', params=payload)
+print (res.url)
+
+res.raise_for_status()
+noStarchSoup = bs4.BeautifulSoup(res.text)
+type(noStarchSoup)
+
+# generate storage for all images from website, add them to storage
+allimages = []
+for imgtag in noStarchSoup.find_all('img'):
+     #print(imgtag['src'])
+	allimages.append(imgtag['src'])
+
+# pick handwriting image and store it in new storage (without image markers, just base64, by character)
+allimages = allimages[6]
+nuallimages = []
+for i in range (23, len(allimages)):
+	nuallimages.append(allimages[i])
+#join list of characters in one string
+nuallimages = ''.join(nuallimages)
+
+# convert base64 image data to png and store it locally in png-file
+fh = open("imageToSave.png", "wb")
+fh.write(nuallimages.decode('base64'))
+fh.close()
+
+# add white padding on bottom
+# old_im = Image.open('imageToSave.png')
+# old_size = old_im.size
+# width = old_im.size[0]
+# height = old_im.size[1]
+# new_size = (width + 200, 384)
+# new_im = Image.new("RGB", new_size, (255, 255, 255))   ## luckily, this is now white!
+# new_im.paste(old_im, ((new_size[0]-old_size[0])/2,
+#                       (new_size[1]-old_size[1])/2))
+# padded = new_im.save("imageToSave.png")
+
+# new_im.save('someimage.jpg')
+
+
+# rotate image 90 degrees (to make it fit the thermal printer)
+src_im = Image.open("imageToSave.png")
+angle = 270
+rotate = src_im.rotate( angle, expand=1 )
+rotated = rotate.save("imageToSave.png")
+print "rotation finished"
+
+# open picture
+os.chdir('/Users/rollasoul/densecap')
+img = Image.open('imageToSave.png')
+img.show()
+
+# run processing sketch to convert png to bmp
+subprocess.call('processing-java --sketch=/Users/rollasoul/Documents/Arduino/libraries/Adafruit-Thermal/processing/bitmapImageConvert --run', shell=True)
+
+# copy processing sketch into arduino file library, compile & send to arduino sketch
+shutil.copy('/Users/rollasoul/densecap/imageToSave.h', '/Users/rollasoul/densecap/A_printertest_mod/imageToSave.h')
+print "bmp copied to Arduino sketch"
+os.chdir('/Users/rollasoul/densecap/A_printertest_mod')
+subprocess.call('/Applications/Arduino.app/Contents/MacOS/Arduino --upload A_printertest_mod.ino', shell=True)
+
+# open in webbrowser (if necessary)
+		#webbrowser.open(nuallimages)
 
 
