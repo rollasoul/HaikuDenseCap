@@ -1,3 +1,5 @@
+Python script to write Haikus based on Densecap:
+
 #DenseCap
 
 This is the code for the paper
